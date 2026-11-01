@@ -1,7 +1,7 @@
-# Credit Card Fraud Detection 
+# Credit Card Fraud Detection
 
-A production-minded, end-to-end data science project to detect fraudulent credit card transactions using the popular **Kaggle Credit Card Fraud** dataset (Time, V1–V28, Amount, Class).  
-Includes: exploratory data analysis (EDA), model training (Logistic Regression & Random Forest), threshold tuning, evaluation (ROC-AUC & PR-AUC), and a minimal Streamlit app for batch scoring.
+An end-to-end data science project to detect fraudulent credit card transactions using the popular **Kaggle Credit Card Fraud** dataset (Time, V1–V28, Amount, Class).  
+Includes: exploratory data analysis (EDA), model training (Logistic Regression, Random Forest & a Decision Tree baseline), threshold tuning, evaluation (ROC-AUC & PR-AUC), and a minimal Streamlit app for batch scoring.
 
 ## Features
 - **Jupyter Notebook** for EDA → `credit_card_fraud_detection.ipynb`
@@ -47,28 +47,37 @@ Walks through EDA, preprocessing, training, evaluation, and threshold tuning.
 
 ## Project Structure
 ```
-cc-fraud-detection/
+Credit-Card-Fraud-Detection/
 ├── app.py                         # Streamlit batch-scoring app
+├── train.py                       # Train/save a pipeline (--algo logreg|rf|dt)
+├── results_table.py               # Prints the results table from metadata.json
+├── make_holdout.py                # Writes test_holdout.csv (the 20% test split)
 ├── requirements.txt
-├── train.py                       # Train and save the model pipeline
 ├── README.md
+├── LICENSE
 ├── credit_card_fraud_detection.ipynb
-├── models/
-│   ├── model.joblib              # Saved after training
-│   └── metadata.json             # Training metadata (algo, timestamp, scores)
+├── models/                        # Logistic Regression: model.joblib, metadata.json
+├── models_rf/metadata.json        # Random Forest metadata
+├── models_dt/metadata.json        # Decision Tree metadata
 └── src/
-    └── utils.py                  # Helper functions (thresholding, plots, metrics)
+    └── utils.py                   # Helper functions (thresholding, plots, metrics)
 ```
+
 ## Results
-Stratified 80/20 split (`random_state=42`), 284,807 transactions, 492 frauds (0.17%). Every number comes from the `metadata.json` that `train.py` writes.
-After training the models you want to compare, run `python results_table.py` -- it reads `models/`, `models_rf/` and `models_dt/` and prints the table below.
+Stratified 80/20 split (`random_state=42`), 284,807 transactions, 492 frauds (0.17%). Every number comes from the `metadata.json` that `train.py` writes;
+`python results_table.py` prints this table from `models/`, `models_rf/` and `models_dt/`.
 
 | Algorithm | SMOTE | ROC-AUC (test) | PR-AUC (test) |
 |-----------|-------|----------------|---------------|
 | Logistic Regression (class-weighted) | off | 0.972 | 0.716 |
+| Random Forest | off | 0.956 | 0.851 |
+| Decision Tree (max_depth=6) | off | 0.912 | 0.464 |
 
-PR-AUC is the headline metric: with 0.17% positives ROC-AUC is very optimistic.
-Logistic Regression on the 20% hold-out (56,962 transactions, 98 frauds), threshold vs. trade-off (from the app):
+PR-AUC is the headline metric: with 0.17% positives, ROC-AUC is very optimistic.
+Random Forest has the best PR-AUC (0.851). Logistic Regression has the highest ROC-AUC but a lower PR-AUC, which shows why ROC-AUC alone is misleading on imbalanced data.
+The single Decision Tree is the weakest, so combining many trees (Random Forest) clearly helps.
+
+**Threshold trade-off (Logistic Regression only)** on the 20% hold-out (56,962 transactions, 98 frauds), read from the Streamlit app:
 
 | Threshold | TP | FP | FN | Precision | Recall |
 |-----------|----|----|----|-----------|--------|
