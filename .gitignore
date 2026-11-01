@@ -1,0 +1,9 @@
+.DS_Store
+.venv/
+__pycache__/
+creditcard.csv
+models_*/model.joblib
+models_dt/model.joblib
+models_rf/model.joblib
+predictions.csv
+test_holdout.csv
